@@ -1,0 +1,76 @@
+name: Build and release
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      Solution_Name: YukiSubmarineCalc
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Download Dalamud
+        run: |
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev"
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      - name: Store artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: YukiSubmarineCalc
+          path: .\YukiSubmarineCalc\bin\x64\Release\YukiSubmarineCalc\*
+          if-no-files-found: error
+          retention-days: 1
+  release:
+    runs-on: windows-latest
+    needs: build
+    if: github.ref_type == 'tag'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true 
+          fetch-depth: 0
+      - name: Download
+        uses: actions/download-artifact@v7
+        with:
+          name: YukiSubmarineCalc
+          path: ./artifacts
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        id: release
+        with:
+          fail_on_unmatched_files: true
+          files: ./artifacts/latest.zip
+      - name: Make repo.json
+        run: |
+          $url = '${{github.server_url}}/${{ github.repository }}/releases/download/${{ github.ref_name }}/latest.zip'
+          $iconUrl = 'https://raw.githubusercontent.com/${{ github.repository }}/refs/tags/${{ github.ref_name }}/icon/icon.png'
+          $inPath = './artifacts/YukiSubmarineCalc.json'
+          $outPath = './repo.json'
+          $manifest = Get-Content -Raw $inPath | ConvertFrom-Json
+          $manifest | Add-Member -MemberType NoteProperty -Name 'DownloadLinkInstall' -Value $url
+          $manifest | Add-Member -MemberType NoteProperty -Name 'DownloadLinkUpdate' -Value $url
+          $manifest | Add-Member -MemberType NoteProperty -Name 'IconUrl' -Value $iconUrl
+          $manifest | Add-Member -MemberType NoteProperty -Name 'DownloadCount' -Value "0"
+          ConvertTo-Json -InputObject @($manifest) | Set-Content -Path $outPath -Encoding UTF8
+      - name: Commit repo.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ./repo.json
+          git diff --cached --quiet || git commit -m "Update repo.json for ${{ github.ref_name }} [skip ci]"
+          git push origin HEAD:master

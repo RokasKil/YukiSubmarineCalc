@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Dalamud.NET.Sdk/14.0.1">
+  <PropertyGroup>
+    <Version>1.0.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <InternalName>YukiSubmarineCalc</InternalName>
+    <Author>Speedas</Author>
+    <Name>Yuki's Submarine Calculator</Name>
+    <RepoUrl>https://github.com/RokasKil/YukiSubmarineCalc</RepoUrl>
+    <Punchline>Checks your inventory and calculates the value of your submarine goods across all characters.</Punchline>
+    <Description>Meow</Description>
+    <Tags>Utility</Tags>
+  </PropertyGroup>
+</Project>
