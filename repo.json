@@ -3,7 +3,7 @@
     "Author": "Speedas",
     "Name": "Yuki's Submarine Calculator",
     "InternalName": "YukiSubmarineCalc",
-    "AssemblyVersion": "1.0.0.0",
+    "AssemblyVersion": "1.0.0.1",
     "Description": "Meow",
     "ApplicableVersion": "any",
     "RepoUrl": "https://github.com/RokasKil/YukiSubmarineCalc",
@@ -17,9 +17,9 @@
     "LoadPriority": 0,
     "Punchline": "Checks your inventory and calculates the value of your submarine goods across all characters.",
     "AcceptsFeedback": true,
-    "DownloadLinkInstall": "https://github.com/RokasKil/YukiSubmarineCalc/releases/download/v1.0.0.0/latest.zip",
-    "DownloadLinkUpdate": "https://github.com/RokasKil/YukiSubmarineCalc/releases/download/v1.0.0.0/latest.zip",
-    "IconUrl": "https://raw.githubusercontent.com/RokasKil/YukiSubmarineCalc/refs/tags/v1.0.0.0/icon/icon.png",
+    "DownloadLinkInstall": "https://github.com/RokasKil/YukiSubmarineCalc/releases/download/v1.0.0.1/latest.zip",
+    "DownloadLinkUpdate": "https://github.com/RokasKil/YukiSubmarineCalc/releases/download/v1.0.0.1/latest.zip",
+    "IconUrl": "https://raw.githubusercontent.com/RokasKil/YukiSubmarineCalc/refs/tags/v1.0.0.1/icon/icon.png",
     "DownloadCount": "0"
   }
 ]
