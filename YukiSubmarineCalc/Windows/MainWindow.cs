@@ -10,16 +10,13 @@ namespace YukiSubmarineCalc.Windows;
 
 public class MainWindow : Window, IDisposable
 {
+    private static readonly Vector4 Red = new Vector4(1, 0, 0, 1);
+    private static readonly Vector4 Green = new Vector4(0, 1, 0, 1);
     private readonly Plugin plugin;
 
     public MainWindow(Plugin plugin)
         : base("Yuki's Submarine Money", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
-        SizeConstraints = new WindowSizeConstraints
-        {
-            MinimumSize = new Vector2(375, 330),
-            MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
-        };
 
         this.plugin = plugin;
     }
@@ -42,7 +39,7 @@ public class MainWindow : Window, IDisposable
         }
         ImGui.TextUnformatted("Total value:");
         ImGui.SameLine();
-        using (ImRaii.PushColor(ImGuiCol.Text, new Vector4(0, 1, 0,1)))
-            ImGui.Text(sum.ToString());
+        using (ImRaii.PushColor(ImGuiCol.Text, sum == 0 ? Red : Green))
+            ImGui.Text($"{sum:n0}"); // the weird symbol is gil symbol
     }
 }

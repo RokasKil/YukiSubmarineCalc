@@ -61,10 +61,10 @@ public sealed class Plugin : IDalamudPlugin
     {
         if (!ClientState.IsLoggedIn || PlayerState.ContentId == 0)
         {
-            Log.Warning("Character not logged in");
+            Log.Debug("Character not logged in");
             return;
         }
-        Dictionary<uint, int> result = [];
+        Dictionary<uint, int> itemCounts = [];
         var filteredItemEnumerator = GameInventory.GetInventoryItems(GameInventoryType.Inventory1).ToArray()
             .Concat(GameInventory.GetInventoryItems(GameInventoryType.Inventory2).ToArray())
             .Concat(GameInventory.GetInventoryItems(GameInventoryType.Inventory3).ToArray())
@@ -72,9 +72,9 @@ public sealed class Plugin : IDalamudPlugin
             .Where(item => ItemIds.Contains(item.ItemId)).AsEnumerable();
         foreach (var gameInventoryItem in filteredItemEnumerator)
         {
-            result[gameInventoryItem.ItemId] = gameInventoryItem.Quantity;
+            itemCounts[gameInventoryItem.ItemId] = itemCounts.GetValueOrDefault(gameInventoryItem.ItemId) + gameInventoryItem.Quantity;
         }
-        Configuration.CharacterItems[PlayerState.ContentId] = result;
+        Configuration.CharacterItems[PlayerState.ContentId] = itemCounts;
         Configuration.Save();
         Log.Debug($"Updated {PlayerState.CharacterName} inventory");
     }
@@ -112,8 +112,11 @@ public sealed class Plugin : IDalamudPlugin
             Configuration.Save();
             UpdateCurrentCharacter();
         }
-        // In response to the slash command, toggle the display status of our main ui
-        MainWindow.Toggle();
+        else
+        {
+            // In response to the slash command, toggle the display status of our main ui
+            MainWindow.Toggle();
+        }
     }
     
     public void ToggleMainUi() => MainWindow.Toggle();
