@@ -5,10 +5,13 @@ using Dalamud.Plugin;
 using System.IO;
 using System.Linq;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.Gui.Dtr;
 using Dalamud.Game.Inventory;
 using Dalamud.Game.Inventory.InventoryEventArgTypes;
+using Dalamud.Game.Text;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin.Services;
+using Lumina.Excel.Sheets;
 using YukiSubmarineCalc.Windows;
 
 namespace YukiSubmarineCalc;
@@ -22,13 +25,18 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IGameInventory GameInventory { get; private set; } = null!;
     [PluginService] internal static IDataManager DataManager { get; private set; } = null!;
     [PluginService] internal static IPluginLog Log { get; private set; } = null!;
+    [PluginService] internal static IDtrBar DtrBar { get; private set; } = null!;
+    [PluginService] internal static IFramework Framework { get; private set; } = null!;
 
     private const string CommandName = "/yuki";
+    private const string DtrBarEntryName = "Yuki submarine money";
     private static readonly uint[] ItemIds = [22500, 22501, 22502, 22503, 22504, 22505, 22506, 22507];
     public Configuration Configuration { get; init; }
 
     public readonly WindowSystem WindowSystem = new("YukiSubmarineCalc");
     private MainWindow MainWindow { get; init; }
+    private IDtrBarEntry DtrBarEntry { get; init; }
+    public long GilSum { get; private set; }
 
     public Plugin()
     {
@@ -52,8 +60,9 @@ public sealed class Plugin : IDalamudPlugin
         
         ClientState.Login += OnLogin;
         GameInventory.InventoryChanged += InventoryChanged;
-        UpdateCurrentCharacter();
-
+        DtrBarEntry = DtrBar.Get(DtrBarEntryName);
+        DtrBarEntry.Tooltip = "Yuki's Submarine Money";
+        Framework.RunOnFrameworkThread(UpdateCurrentCharacter);
     }
 
 
@@ -62,6 +71,7 @@ public sealed class Plugin : IDalamudPlugin
         if (!ClientState.IsLoggedIn || PlayerState.ContentId == 0)
         {
             Log.Debug("Character not logged in");
+            CalculateGil();
             return;
         }
         Dictionary<uint, int> itemCounts = [];
@@ -77,6 +87,7 @@ public sealed class Plugin : IDalamudPlugin
         Configuration.CharacterItems[PlayerState.ContentId] = itemCounts;
         Configuration.Save();
         Log.Debug($"Updated {PlayerState.CharacterName} inventory");
+        CalculateGil();
     }
     
     private void InventoryChanged(IReadOnlyCollection<InventoryEventArgs> events)
@@ -102,6 +113,7 @@ public sealed class Plugin : IDalamudPlugin
         MainWindow.Dispose();
 
         CommandManager.RemoveHandler(CommandName);
+        DtrBarEntry?.Remove();
     }
 
     private void OnCommand(string command, string args)
@@ -117,6 +129,24 @@ public sealed class Plugin : IDalamudPlugin
             // In response to the slash command, toggle the display status of our main ui
             MainWindow.Toggle();
         }
+    }
+
+    public void CalculateGil()
+    {
+        GilSum = 0;
+        foreach (var itemsCounts in Configuration.CharacterItems.Values)
+        {
+            foreach (var itemCount in itemsCounts)
+            {
+                var item = DataManager.GetExcelSheet<Item>().GetRowOrDefault(itemCount.Key);
+                if (item.HasValue)
+                {
+                    GilSum += item.Value.PriceLow * itemCount.Value;
+                }
+            }
+        }
+
+        DtrBarEntry?.Text = $"{GilSum:n0}{SeIconChar.Gil.ToIconString()}";
     }
     
     public void ToggleMainUi() => MainWindow.Toggle();

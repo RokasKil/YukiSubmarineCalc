@@ -26,21 +26,9 @@ public class MainWindow : Window, IDisposable
 
     public override void Draw()
     {
-        long sum = 0;
-        foreach (var itemsCounts in plugin.Configuration.CharacterItems.Values)
-        {
-            foreach (var itemCount in itemsCounts)
-            {
-                var item = Plugin.DataManager.GetExcelSheet<Item>().GetRowOrDefault(itemCount.Key);
-                if (item.HasValue)
-                {
-                    sum += item.Value.PriceLow * itemCount.Value;
-                }
-            }
-        }
         ImGui.TextUnformatted("Total value:");
         ImGui.SameLine();
-        using (ImRaii.PushColor(ImGuiCol.Text, sum == 0 ? Red : Green))
-            ImGui.Text($"{sum:n0}{SeIconChar.Gil.ToIconString()}");
+        using (ImRaii.PushColor(ImGuiCol.Text, plugin.GilSum == 0 ? Red : Green))
+            ImGui.Text($"{plugin.GilSum:n0}{SeIconChar.Gil.ToIconString()}");
     }
 }
