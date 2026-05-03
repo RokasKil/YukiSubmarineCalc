@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.Text;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
@@ -40,6 +41,6 @@ public class MainWindow : Window, IDisposable
         ImGui.TextUnformatted("Total value:");
         ImGui.SameLine();
         using (ImRaii.PushColor(ImGuiCol.Text, sum == 0 ? Red : Green))
-            ImGui.Text($"{sum:n0}"); // the weird symbol is gil symbol
+            ImGui.Text($"{sum:n0}{SeIconChar.Gil.ToIconString()}");
     }
 }
